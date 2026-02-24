@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is Super Admin
+    function isSuperAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+    }
+
+    // Helper function to check if user is Sub Admin
+    function isSubAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'sub_admin';
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      allow update: if 
+        // 1. Super Admin can update anyone
+        isSuperAdmin() 
+        || 
+        // 2. User can update their own profile (but NOT their role)
+        (request.auth.uid == userId && !('role' in request.resource.data.diff(resource.data).affectedKeys()));
+      
+      // CRITICAL SECURITY RULE: Prevent demoting Super Admin
+      // Even Super Admin cannot accidentally demote themselves via this rule if we enforce it strictly,
+      // but usually we trust Super Admin. 
+      // To prevent OTHERS (if we had other rules), we ensure existing super_admins stay super_admins.
+      // However, the update rule above only allows Super Admin or Self to update.
+      // If Self updates, they can't change role.
+      // If Super Admin updates, they can change role.
+      // So effectively, only a Super Admin can demote another Super Admin (if multiple exist).
+    }
+
+    // Teams Collection
+    match /teams/{teamId} {
+      allow read: if request.auth != null;
+      allow create: if isSuperAdmin() || isSubAdmin();
+      allow update: if isSuperAdmin() || isSubAdmin() || (resource.data.leaderId == request.auth.uid);
+    }
+
+    // Tournaments Collection
+    match /tournaments/{tournamentId} {
+      allow read: if request.auth != null;
+      allow write: if isSuperAdmin() || isSubAdmin();
+    }
+  }
+}
