@@ -99,6 +99,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Login failed", err);
       if (err.code === 'auth/unauthorized-domain') {
         setError(`Domain not authorized: ${window.location.hostname}`);
+      } else if (err.code === 'auth/popup-blocked') {
+        setError("Popup blocked. Please allow popups for this site and try again.");
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError("Login cancelled. You closed the popup.");
       } else {
         setError(err.message || "Login failed");
       }

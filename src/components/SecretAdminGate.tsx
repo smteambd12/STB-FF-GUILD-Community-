@@ -16,20 +16,33 @@ export default function SecretAdminGate() {
   // Secret trigger: 5 clicks on the footer text
   const [clickCount, setClickCount] = useState(0);
 
+  const [codes, setCodes] = useState<any>(null);
+
   useEffect(() => {
     if (clickCount >= 5) {
       setIsOpen(true);
       setClickCount(0);
+      // Pre-fetch codes when opening to avoid async delay before login popup
+      getAccessCodes().then(setCodes).catch(console.error);
     }
   }, [clickCount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    if (!codes) {
+      setError('Initializing system... please wait a moment and try again.');
+      // Try fetching again if missing
+      getAccessCodes().then(setCodes).catch(console.error);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const accessCodes = await getAccessCodes();
+      // Use pre-fetched codes
+      const accessCodes = codes;
       
       if (code === accessCodes.super_admin) {
         setAccessLevel('super_admin');
