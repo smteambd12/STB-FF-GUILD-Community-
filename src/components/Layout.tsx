@@ -18,7 +18,7 @@ import SecretAdminGate from './SecretAdminGate';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { t, language, setLanguage } = useLanguage();
-  const { user, login, logout, isAdmin, error, clearError } = useAuth();
+  const { user, login, loginDemo, logout, isAdmin, error, clearError } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -37,22 +37,62 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500/30">
       {error && (
-        <div className="fixed top-0 left-0 right-0 z-[100] bg-red-500/90 text-white p-4 backdrop-blur-md border-b border-red-400 flex items-center justify-between shadow-xl">
-          <div className="container mx-auto flex items-center gap-3">
-            <ShieldCheck className="shrink-0" />
-            <div className="flex-1">
-              <p className="font-bold">Authentication Error</p>
-              <p className="text-sm opacity-90">{error}</p>
-              {error.includes("Domain not authorized") && (
-                <p className="text-xs mt-1 bg-black/20 p-2 rounded font-mono select-all">
-                  Add this domain to Firebase Console &gt; Authentication &gt; Settings &gt; Authorized Domains
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-red-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl shadow-red-500/20 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent" />
+            
+            <div className="flex items-start gap-4 mb-4">
+              <div className="p-3 bg-red-500/10 rounded-full text-red-500 shrink-0">
+                <ShieldCheck size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-1">Authentication Error</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{error}</p>
+              </div>
+            </div>
+
+            {error.includes("Domain not authorized") && (
+              <div className="bg-black/40 rounded-lg p-4 mb-6 border border-white/5">
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-2 font-bold">Action Required</p>
+                <p className="text-sm text-slate-300 mb-3">
+                  This domain is not whitelisted in your Firebase project. Please add it to:
                 </p>
-              )}
+                <div className="flex items-center gap-2 bg-slate-950 p-2 rounded border border-slate-800">
+                  <code className="flex-1 text-emerald-400 font-mono text-xs truncate select-all">
+                    {window.location.hostname}
+                  </code>
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(window.location.hostname)}
+                    className="text-slate-500 hover:text-white transition-colors"
+                    title="Copy Domain"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-2">
+                  Go to Firebase Console &gt; Authentication &gt; Settings &gt; Authorized Domains
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  clearError();
+                  loginDemo();
+                }}
+                className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-sm font-bold rounded-lg transition-colors border border-emerald-500/50"
+              >
+                Continue in Demo Mode
+              </button>
+              <button 
+                onClick={clearError}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition-colors border border-white/10"
+              >
+                Dismiss
+              </button>
             </div>
           </div>
-          <button onClick={clearError} className="p-2 hover:bg-white/20 rounded-full transition-colors">
-            <X size={20} />
-          </button>
         </div>
       )}
 

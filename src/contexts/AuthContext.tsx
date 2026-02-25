@@ -8,8 +8,11 @@ interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   error: string | null;
+  accessLevel: Role | null; // Track the level unlocked via Password Gate
   login: () => Promise<void>;
+  loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
+  setAccessLevel: (level: Role | null) => void;
   isAdmin: boolean;
   isSuperAdmin: boolean;
   clearError: () => void;
@@ -21,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accessLevel, setAccessLevel] = useState<Role | null>(null);
 
   useEffect(() => {
     if (!auth || !db) {
@@ -32,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: 'super_admin',
         createdAt: Date.now()
       });
+      setAccessLevel('super_admin'); // Auto-unlock for demo
       setLoading(false);
       return;
     }
@@ -44,7 +49,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const userDoc = await getDoc(userDocRef);
 
           if (userDoc.exists()) {
-            setUser(userDoc.data() as UserProfile);
+            const userData = userDoc.data() as UserProfile;
+            setUser(userData);
+            // If they are already a super_admin in DB, auto-grant access level?
+            // User requested "Password to enter", so maybe we DON'T auto-grant accessLevel based on DB role?
+            // But for usability, if I'm logged in as Super Admin, I shouldn't need a password every time.
+            // Let's say: DB Role = Permanent Identity. Access Level = Session Unlock.
+            // We'll auto-grant if DB role matches, but the Gate allows "Guest" to enter password to become Admin temporarily (or prompt login).
+            if (userData.role === 'super_admin') setAccessLevel('super_admin');
+            else if (userData.role === 'sub_admin') setAccessLevel('sub_admin');
+            else if (userData.role === 'editor') setAccessLevel('editor');
           } else {
             // Create new user profile if not exists
             const newUser: UserProfile = {
@@ -64,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         setUser(null);
+        setAccessLevel(null);
       }
       setLoading(false);
     });
@@ -75,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     if (!auth) {
       alert("Firebase not configured. Using demo mode.");
+      loginDemo();
       return;
     }
     try {
@@ -89,10 +105,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginDemo = async () => {
+    setUser({
+      uid: 'demo-admin',
+      email: 'admin@stb.com',
+      displayName: 'Demo Super Admin',
+      role: 'super_admin',
+      createdAt: Date.now()
+    });
+    setAccessLevel('super_admin');
+    setError(null);
+  };
+
   const logout = async () => {
-    if (!auth) return;
+    if (!auth) {
+      setUser(null);
+      setAccessLevel(null);
+      return;
+    }
     try {
       await signOut(auth);
+      setAccessLevel(null);
     } catch (err: any) {
       console.error("Logout failed", err);
       setError(err.message || "Logout failed");
@@ -105,10 +138,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     error,
+    accessLevel,
+    setAccessLevel,
     login,
+    loginDemo,
     logout,
-    isAdmin: user?.role === 'super_admin' || user?.role === 'sub_admin',
-    isSuperAdmin: user?.role === 'super_admin',
+    isAdmin: accessLevel === 'super_admin' || accessLevel === 'sub_admin',
+    isSuperAdmin: accessLevel === 'super_admin',
     clearError
   };
 
