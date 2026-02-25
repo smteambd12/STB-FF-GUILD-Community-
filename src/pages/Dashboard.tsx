@@ -182,41 +182,153 @@ export default function Dashboard() {
 
       {/* Guild Players Roster */}
       <section className="px-4 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-2">
-          <Users className="text-blue-500" />
-          Guild Roster
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-white flex items-center gap-2">
+              <Users className="text-blue-500" />
+              Guild Roster
+            </h2>
+            <p className="text-slate-400 mt-1">Meet our elite warriors and their battle stats</p>
+          </div>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 bg-slate-800 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-700 transition-colors">All</button>
+            <button className="px-3 py-1 bg-slate-800/50 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-700 transition-colors">Leaders</button>
+            <button className="px-3 py-1 bg-slate-800/50 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-700 transition-colors">Elites</button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { name: 'STB_King', role: 'Leader', level: 75, rank: 'Grandmaster' },
-            { name: 'STB_Sniper', role: 'Co-Leader', level: 72, rank: 'Master' },
-            { name: 'STB_Rusher', role: 'Elite', level: 68, rank: 'Heroic' },
-            { name: 'STB_Ghost', role: 'Member', level: 65, rank: 'Heroic' },
-            { name: 'STB_Viper', role: 'Member', level: 64, rank: 'Diamond IV' },
-            { name: 'STB_Shadow', role: 'Member', level: 62, rank: 'Diamond III' },
-            { name: 'STB_Flash', role: 'Member', level: 60, rank: 'Diamond II' },
-            { name: 'STB_Storm', role: 'Member', level: 58, rank: 'Diamond I' },
+            { 
+              name: 'STB_King', 
+              role: 'Leader', 
+              level: 75, 
+              rank: 'Grandmaster', 
+              kd: '5.24', 
+              hs: '68%', 
+              matches: '12.5K',
+              winRate: '42%'
+            },
+            { 
+              name: 'STB_Sniper', 
+              role: 'Co-Leader', 
+              level: 72, 
+              rank: 'Master', 
+              kd: '4.89', 
+              hs: '72%', 
+              matches: '10.2K',
+              winRate: '38%'
+            },
+            { 
+              name: 'STB_Rusher', 
+              role: 'Elite', 
+              level: 68, 
+              rank: 'Heroic', 
+              kd: '4.15', 
+              hs: '55%', 
+              matches: '8.4K',
+              winRate: '35%'
+            },
+            { 
+              name: 'STB_Ghost', 
+              role: 'Member', 
+              level: 65, 
+              rank: 'Heroic', 
+              kd: '3.85', 
+              hs: '48%', 
+              matches: '6.1K',
+              winRate: '32%'
+            },
+            { 
+              name: 'STB_Viper', 
+              role: 'Member', 
+              level: 64, 
+              rank: 'Diamond IV', 
+              kd: '3.20', 
+              hs: '45%', 
+              matches: '5.5K',
+              winRate: '30%'
+            },
+            { 
+              name: 'STB_Shadow', 
+              role: 'Member', 
+              level: 62, 
+              rank: 'Diamond III', 
+              kd: '2.95', 
+              hs: '42%', 
+              matches: '4.8K',
+              winRate: '28%'
+            },
           ].map((player, i) => (
             <motion.div 
               key={i}
-              whileHover={{ scale: 1.02 }}
-              className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:border-emerald-500/50 transition-colors"
+              whileHover={{ y: -5 }}
+              className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden hover:border-emerald-500/30 transition-all group"
             >
-              <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold border border-slate-700">
-                {player.name[4]}
-              </div>
-              <div>
-                <h3 className="font-bold text-white">{player.name}</h3>
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <span className="text-emerald-400">{player.role}</span>
-                  <span>•</span>
-                  <span>Lvl {player.level}</span>
+              {/* Card Header */}
+              <div className="p-6 flex items-start justify-between relative">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-2xl font-bold text-slate-500 group-hover:border-emerald-500/50 group-hover:text-emerald-500 transition-colors shadow-lg">
+                      {player.name[4]}
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 bg-slate-950 rounded-lg border border-slate-800 p-1">
+                      {player.rank === 'Grandmaster' && <Crown size={14} className="text-red-500" />}
+                      {player.rank === 'Master' && <Star size={14} className="text-purple-500" />}
+                      {player.rank === 'Heroic' && <ShieldCheck size={14} className="text-amber-500" />}
+                      {player.rank.includes('Diamond') && <Target size={14} className="text-blue-400" />}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">{player.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                        player.role === 'Leader' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        player.role === 'Co-Leader' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                        player.role === 'Elite' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                        'bg-slate-700/50 text-slate-400 border-slate-600/30'
+                      }`}>
+                        {player.role}
+                      </span>
+                      <span className="text-xs text-slate-500 font-mono">Lvl.{player.level}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Rank</div>
+                  <div className={`text-sm font-bold ${
+                    player.rank === 'Grandmaster' ? 'text-red-500' :
+                    player.rank === 'Master' ? 'text-purple-500' :
+                    player.rank === 'Heroic' ? 'text-amber-500' :
+                    'text-blue-400'
+                  }`}>
+                    {player.rank}
+                  </div>
                 </div>
               </div>
-              <div className="ml-auto">
-                {player.rank === 'Grandmaster' && <Crown size={16} className="text-red-500" />}
-                {player.rank === 'Master' && <Star size={16} className="text-purple-500" />}
-                {player.rank === 'Heroic' && <ShieldCheck size={16} className="text-amber-500" />}
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-4 border-t border-slate-800 bg-slate-950/30 divide-x divide-slate-800">
+                <div className="p-3 text-center">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">K/D</div>
+                  <div className="text-sm font-bold text-white">{player.kd}</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Headshot</div>
+                  <div className="text-sm font-bold text-emerald-400">{player.hs}</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Win Rate</div>
+                  <div className="text-sm font-bold text-blue-400">{player.winRate}</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Matches</div>
+                  <div className="text-sm font-bold text-slate-300">{player.matches}</div>
+                </div>
               </div>
             </motion.div>
           ))}
