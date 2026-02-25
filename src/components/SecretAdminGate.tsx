@@ -30,19 +30,12 @@ export default function SecretAdminGate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!codes) {
-      setError('Initializing system... please wait a moment and try again.');
-      // Try fetching again if missing
-      getAccessCodes().then(setCodes).catch(console.error);
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // Use pre-fetched codes
-      const accessCodes = codes;
+      // Fetch codes if they haven't been pre-fetched yet
+      const accessCodes = codes || await getAccessCodes();
+      if (!codes) setCodes(accessCodes);
       
       if (code === accessCodes.super_admin) {
         setAccessLevel('super_admin');

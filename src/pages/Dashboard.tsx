@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'motion/react';
@@ -16,10 +16,30 @@ import {
   Zap,
   ShieldCheck
 } from 'lucide-react';
+import { getPlayers, PlayerStats } from '../services/playerService';
 
 export default function Dashboard() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const [players, setPlayers] = useState<PlayerStats[]>([]);
+
+  useEffect(() => {
+    getPlayers().then(data => {
+      if (data.length > 0) {
+        setPlayers(data);
+      } else {
+        // Fallback to initial mock data if none in DB
+        setPlayers([
+          { name: 'STB_King', role: 'Leader', level: 75, rank: 'Grandmaster', kd: '5.24', hs: '68%', matches: '12.5K', winRate: '42%' },
+          { name: 'STB_Sniper', role: 'Co-Leader', level: 72, rank: 'Master', kd: '4.89', hs: '72%', matches: '10.2K', winRate: '38%' },
+          { name: 'STB_Rusher', role: 'Elite', level: 68, rank: 'Heroic', kd: '4.15', hs: '55%', matches: '8.4K', winRate: '35%' },
+          { name: 'STB_Ghost', role: 'Member', level: 65, rank: 'Heroic', kd: '3.85', hs: '48%', matches: '6.1K', winRate: '32%' },
+          { name: 'STB_Viper', role: 'Member', level: 64, rank: 'Diamond IV', kd: '3.20', hs: '45%', matches: '5.5K', winRate: '30%' },
+          { name: 'STB_Shadow', role: 'Member', level: 62, rank: 'Diamond III', kd: '2.95', hs: '42%', matches: '4.8K', winRate: '28%' },
+        ]);
+      }
+    });
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -198,70 +218,9 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { 
-              name: 'STB_King', 
-              role: 'Leader', 
-              level: 75, 
-              rank: 'Grandmaster', 
-              kd: '5.24', 
-              hs: '68%', 
-              matches: '12.5K',
-              winRate: '42%'
-            },
-            { 
-              name: 'STB_Sniper', 
-              role: 'Co-Leader', 
-              level: 72, 
-              rank: 'Master', 
-              kd: '4.89', 
-              hs: '72%', 
-              matches: '10.2K',
-              winRate: '38%'
-            },
-            { 
-              name: 'STB_Rusher', 
-              role: 'Elite', 
-              level: 68, 
-              rank: 'Heroic', 
-              kd: '4.15', 
-              hs: '55%', 
-              matches: '8.4K',
-              winRate: '35%'
-            },
-            { 
-              name: 'STB_Ghost', 
-              role: 'Member', 
-              level: 65, 
-              rank: 'Heroic', 
-              kd: '3.85', 
-              hs: '48%', 
-              matches: '6.1K',
-              winRate: '32%'
-            },
-            { 
-              name: 'STB_Viper', 
-              role: 'Member', 
-              level: 64, 
-              rank: 'Diamond IV', 
-              kd: '3.20', 
-              hs: '45%', 
-              matches: '5.5K',
-              winRate: '30%'
-            },
-            { 
-              name: 'STB_Shadow', 
-              role: 'Member', 
-              level: 62, 
-              rank: 'Diamond III', 
-              kd: '2.95', 
-              hs: '42%', 
-              matches: '4.8K',
-              winRate: '28%'
-            },
-          ].map((player, i) => (
+          {players.map((player, i) => (
             <motion.div 
-              key={i}
+              key={player.id || i}
               whileHover={{ y: -5 }}
               className="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden hover:border-emerald-500/30 transition-all group"
             >
